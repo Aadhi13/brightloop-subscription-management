@@ -10,24 +10,43 @@ import {
   CreditCard,
   Tag,
   Settings,
+  UserCheck,
+  User,
   X,
   Sparkles,
 } from 'lucide-react';
-
-const navigationItems = [
-  { name: 'Overview', to: '/', icon: LayoutDashboard },
-  { name: 'Customers', to: '/customers', icon: Users },
-  { name: 'Products', to: '/products', icon: Package },
-  { name: 'Plans', to: '/plans', icon: CalendarRange },
-  { name: 'Quotations', to: '/quotations', icon: FileText },
-  { name: 'Subscriptions', to: '/subscriptions', icon: Repeat },
-  { name: 'Invoices', to: '/invoices', icon: Receipt },
-  { name: 'Payments', to: '/payments', icon: CreditCard },
-  { name: 'Discounts', to: '/discounts', icon: Tag, badge: 'Admin' },
-  { name: 'Settings', to: '/settings', icon: Settings, badge: 'Admin' },
-];
+import { useAuth } from '../../modules/auth/useAuth.js';
 
 export const Sidebar = ({ isOpen, onClose }) => {
+  const { user, isCustomer, isAdmin } = useAuth();
+
+  // Navigation defined according to docs/UI_DESIGN.md role guidelines
+  const navigationItems = isCustomer
+    ? [
+        { name: 'Overview', to: '/', icon: LayoutDashboard },
+        { name: 'My Subscriptions', to: '/subscriptions', icon: Repeat },
+        { name: 'My Invoices', to: '/invoices', icon: Receipt },
+        { name: 'Payment History', to: '/payments', icon: CreditCard },
+        { name: 'Profile', to: '/profile', icon: User },
+      ]
+    : [
+        { name: 'Overview', to: '/', icon: LayoutDashboard },
+        { name: 'Customers', to: '/customers', icon: Users },
+        { name: 'Products', to: '/products', icon: Package },
+        { name: 'Plans', to: '/plans', icon: CalendarRange },
+        { name: 'Quotations', to: '/quotations', icon: FileText },
+        { name: 'Subscriptions', to: '/subscriptions', icon: Repeat },
+        { name: 'Invoices', to: '/invoices', icon: Receipt },
+        { name: 'Payments', to: '/payments', icon: CreditCard },
+        ...(isAdmin
+          ? [
+              { name: 'Discounts', to: '/discounts', icon: Tag, badge: 'Admin' },
+              { name: 'Staff Management', to: '/settings/staff', icon: UserCheck, badge: 'Admin' },
+              { name: 'Settings', to: '/settings', icon: Settings, badge: 'Admin' },
+            ]
+          : []),
+      ];
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -54,7 +73,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             <div>
               <span className="font-semibold tracking-tight text-charcoal text-base">Brightloop</span>
               <span className="block text-[11px] font-medium uppercase tracking-wider text-muted">
-                Verdant Ledger
+                {isCustomer ? 'Customer Portal' : 'Verdant Ledger'}
               </span>
             </div>
           </div>
@@ -72,7 +91,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
         {/* Navigation list */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
-            Management
+            {isCustomer ? 'Self-Service Portal' : 'Management & Billing'}
           </div>
           {navigationItems.map((item) => {
             const Icon = item.icon;
@@ -106,9 +125,11 @@ export const Sidebar = ({ isOpen, onClose }) => {
         {/* Footer info */}
         <div className="border-t border-stone p-4 text-xs text-muted">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[11px]">v0.1.0 (M0)</span>
+            <span className="font-mono text-[11px] uppercase font-semibold">
+              {user?.role || 'Guest'}
+            </span>
             <span className="inline-flex items-center rounded-full bg-forest-subtle px-2 py-0.5 text-[10px] font-medium text-forest">
-              Foundation
+              M1: Auth & RBAC
             </span>
           </div>
         </div>

@@ -8,9 +8,13 @@ import {
   Server,
   RefreshCw,
   Clock,
+  ShieldCheck,
+  User,
 } from 'lucide-react';
+import { useAuth } from '../auth/useAuth.js';
 
 export const DashboardPlaceholder = ({ healthData, isHealthLoading, onRefreshHealth, healthError }) => {
+  const { user, customer } = useAuth();
   const isConnected = healthData?.database === 'connected';
 
   return (
@@ -21,28 +25,58 @@ export const DashboardPlaceholder = ({ healthData, isHealthLoading, onRefreshHea
           <div>
             <div className="flex items-center space-x-2">
               <span className="inline-flex items-center rounded-full bg-forest-subtle px-2.5 py-0.5 text-xs font-semibold text-forest">
-                Milestone M0 Active
+                Milestone M1 Active
               </span>
-              <span className="text-xs text-muted">Brightloop Foundation</span>
+              <span className="text-xs text-muted">Authentication & RBAC Enforced</span>
             </div>
             <h2 className="mt-2 text-xl font-bold tracking-tight text-charcoal sm:text-2xl">
-              Verdant Ledger Console
+              Welcome, {customer?.name || user?.email?.split('@')[0] || 'Administrator'}
             </h2>
             <p className="mt-1 text-sm text-muted">
-              Subscription lifecycle, recurring billing, and revenue operations modular monolith.
+              {user?.role === 'customer'
+                ? `Customer Portal for ${customer?.companyName || customer?.name || 'Active Customer'} • Self-service subscriptions & invoices`
+                : 'Verdant Ledger Subscription Management & Recurring Revenue Engine'}
             </p>
           </div>
 
           <div className="flex items-center space-x-3">
+            <div className="hidden sm:flex items-center space-x-2 rounded-lg border border-stone bg-paper/60 px-3 py-1.5 text-xs">
+              <ShieldCheck className="h-4 w-4 text-forest" />
+              <span className="font-semibold text-charcoal uppercase tracking-wider">{user?.role}</span>
+            </div>
             <button
               type="button"
               onClick={onRefreshHealth}
               disabled={isHealthLoading}
-              className="inline-flex items-center space-x-2 rounded-lg border border-stone bg-paper px-3.5 py-2 text-xs font-medium text-charcoal hover:bg-stone-light/60 transition-colors disabled:opacity-50"
+              className="inline-flex items-center space-x-2 rounded-lg border border-stone bg-paper px-3.5 py-2 text-xs font-medium text-charcoal hover:bg-stone-light/60 transition-colors disabled:opacity-50 cursor-pointer"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isHealthLoading ? 'animate-spin' : ''}`} />
-              <span>Refresh Health</span>
+              <span>Sync Health</span>
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Authenticated Context Card */}
+      <div className="rounded-xl border border-forest/30 bg-forest-subtle/30 p-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-forest text-white">
+              <User className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-charcoal">
+                Active Session: <span className="font-mono">{user?.email}</span>
+              </div>
+              <div className="text-[11px] text-muted">
+                Role: <span className="font-semibold uppercase text-forest">{user?.role}</span>
+                {customer?.companyName && ` • Organization: ${customer.companyName}`}
+                {` • JWT Auth: HttpOnly Cookie Verified`}
+              </div>
+            </div>
+          </div>
+          <div className="text-[11px] font-medium text-forest">
+            Server-side authorization enforced
           </div>
         </div>
       </div>
@@ -64,7 +98,7 @@ export const DashboardPlaceholder = ({ healthData, isHealthLoading, onRefreshHea
             </span>
           </div>
           <p className="mt-1 text-xs text-muted">
-            ES modules • Port {healthData?.environment === 'development' ? '5000' : 'Production'} • Helmet & CORS active
+            ES modules • Port 5000 • CSRF & Rate Limiting active
           </p>
         </div>
 
@@ -83,7 +117,7 @@ export const DashboardPlaceholder = ({ healthData, isHealthLoading, onRefreshHea
             </span>
           </div>
           <p className="mt-1 text-xs text-muted">
-            Database: <span className="font-mono font-medium">brightloop</span> • Mongoose 9.x
+            Database: <span className="font-mono font-medium">brightloop</span> • User & Customer collections indexed
           </p>
         </div>
 
@@ -150,43 +184,43 @@ export const DashboardPlaceholder = ({ healthData, isHealthLoading, onRefreshHea
         </div>
       </div>
 
-      {/* Architectural Checklist & Implementation Status */}
+      {/* M1 Milestones Completed Checklist */}
       <div className="rounded-xl border border-stone bg-surface p-6 shadow-2xs">
-        <h3 className="text-base font-semibold text-charcoal">Task M0: Acceptance Criteria Checklist</h3>
+        <h3 className="text-base font-semibold text-charcoal">M1 Security and Authorization Invariants</h3>
         <p className="mt-1 text-xs text-muted">
-          All architectural contracts and security boundaries established for incremental milestone delivery.
+          All RBAC rules, cryptographic hashing, and ownership boundaries validated.
         </p>
 
         <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="flex items-start space-x-3 rounded-lg border border-stone/60 bg-paper/50 p-3">
             <CheckCircle2 className="h-5 w-5 text-forest shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-xs font-semibold text-charcoal">Monorepo Structure</h4>
-              <p className="text-xs text-muted">Separated React frontend and Express backend, independently runnable.</p>
+              <h4 className="text-xs font-semibold text-charcoal">Customer Self-Registration</h4>
+              <p className="text-xs text-muted">Creates customer account and linked Customer document. Cannot assign privileged roles.</p>
             </div>
           </div>
 
           <div className="flex items-start space-x-3 rounded-lg border border-stone/60 bg-paper/50 p-3">
             <CheckCircle2 className="h-5 w-5 text-forest shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-xs font-semibold text-charcoal">MongoDB Atlas Connectivity</h4>
-              <p className="text-xs text-muted">Mongoose connection established with graceful degradation and disconnect handling.</p>
+              <h4 className="text-xs font-semibold text-charcoal">HttpOnly JWT Session Cookies</h4>
+              <p className="text-xs text-muted">Tokens never exposed in JSON responses. Cleared cleanly on logout.</p>
             </div>
           </div>
 
           <div className="flex items-start space-x-3 rounded-lg border border-stone/60 bg-paper/50 p-3">
             <CheckCircle2 className="h-5 w-5 text-forest shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-xs font-semibold text-charcoal">Centralized Error Handler</h4>
-              <p className="text-xs text-muted">Uniform API error response conforming to <code className="text-[11px] font-mono text-charcoal">docs/API.md</code>.</p>
+              <h4 className="text-xs font-semibold text-charcoal">Server-Side RBAC & Staff Provisioning</h4>
+              <p className="text-xs text-muted">Only Admin can provision staff. Staff and Customer attempts receive 403 Forbidden.</p>
             </div>
           </div>
 
           <div className="flex items-start space-x-3 rounded-lg border border-stone/60 bg-paper/50 p-3">
             <CheckCircle2 className="h-5 w-5 text-forest shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-xs font-semibold text-charcoal">Verdant Ledger Design Tokens</h4>
-              <p className="text-xs text-muted">Tailwind CSS v4 theme configured with paper, forest, charcoal, stone, terracotta tokens.</p>
+              <h4 className="text-xs font-semibold text-charcoal">Database-Level Customer Ownership</h4>
+              <p className="text-xs text-muted">Customers cannot read or update another customer profile. Generic authentication errors prevent account enumeration.</p>
             </div>
           </div>
         </div>

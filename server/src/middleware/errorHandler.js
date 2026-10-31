@@ -1,16 +1,10 @@
 import { env } from '../config/env.js';
-import { AppError } from '../utils/errors.js';
 
 export const errorHandler = (err, req, res, next) => { // eslint-disable-line no-unused-vars
-  let statusCode = err.statusCode || 500;
-  let code = err.code || 'INTERNAL_SERVER_ERROR';
-  let message = err.message || 'An unexpected error occurred';
+  let statusCode = err.statusCode;
+  let code = err.code;
+  let message = err.message;
   let details = err.details || [];
-
-  // Log unexpected errors
-  if (statusCode >= 500) {
-    console.error(`[Unhandled Error] ${req.method} ${req.originalUrl}:`, err);
-  }
 
   // Handle Mongoose / MongoDB Duplicate Key Error (E11000)
   if (err.code === 11000) {
@@ -20,17 +14,15 @@ export const errorHandler = (err, req, res, next) => { // eslint-disable-line no
     message = `A resource with this ${field} already exists.`;
     details = [{ field, value: err.keyValue?.[field] }];
   }
-
   // Handle Mongoose CastError (e.g. invalid ObjectId format)
-  if (err.name === 'CastError') {
+  else if (err.name === 'CastError') {
     statusCode = 400;
     code = 'INVALID_ID';
     message = `Invalid format for identifier: ${err.value}`;
     details = [{ field: err.path, value: err.value }];
   }
-
   // Handle Mongoose Validation Error
-  if (err.name === 'ValidationError') {
+  else if (err.name === 'ValidationError') {
     statusCode = 422;
     code = 'VALIDATION_ERROR';
     message = 'Validation failed on database schema';
@@ -39,9 +31,8 @@ export const errorHandler = (err, req, res, next) => { // eslint-disable-line no
       message: e.message,
     }));
   }
-
   // Handle Zod Validation Error
-  if (err.name === 'ZodError' || Array.isArray(err.issues)) {
+  else if (err.name === 'ZodError' || Array.isArray(err.issues)) {
     statusCode = 422;
     code = 'VALIDATION_ERROR';
     message = 'Request validation failed';
@@ -51,13 +42,22 @@ export const errorHandler = (err, req, res, next) => { // eslint-disable-line no
       code: issue.code,
     }));
   }
-
   // Handle Bad JSON syntax in body
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+  else if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     statusCode = 400;
     code = 'INVALID_JSON';
     message = 'Malformed JSON payload in request body';
     details = [];
+  }
+
+  // Fallback defaults
+  statusCode = statusCode || 500;
+  code = code || 'INTERNAL_SERVER_ERROR';
+  message = message || 'An unexpected error occurred';
+
+  // Only log unexpected 500 errors
+  if (statusCode >= 500) {
+    console.error(`[Unhandled Error] ${req.method} ${req.originalUrl}:`, err);
   }
 
   // Mask internal server errors in production
@@ -75,3 +75,5 @@ export const errorHandler = (err, req, res, next) => { // eslint-disable-line no
     },
   });
 };
+
+export default errorHandler;

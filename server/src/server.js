@@ -1,6 +1,7 @@
 import app from './app.js';
 import { env } from './config/env.js';
 import { connectDB, disconnectDB } from './config/db.js';
+import { bootstrapAdmin } from './config/bootstrap.js';
 
 let server;
 
@@ -8,6 +9,8 @@ const startServer = async () => {
   try {
     // Attempt database connection first
     await connectDB();
+    // Ensure initial admin exists
+    await bootstrapAdmin();
   } catch (error) {
     console.warn(`[Warning] Database connection failed at startup: ${error.message}. Continuing server startup...`);
   }
